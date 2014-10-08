@@ -2,7 +2,7 @@
 
 The long missing command to clean up all docker images that are not used by any container.
 
-## Using
+## Usage
 
 This command is available as docker image `bobrik/image-cleaner`:
 
