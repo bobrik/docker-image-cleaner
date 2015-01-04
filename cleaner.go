@@ -17,7 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	images, err := client.ListImages(false)
+	images, err := client.ListImages(docker.ListImagesOptions{})
 	if err != nil {
 		log.Fatal(err)
 	}
