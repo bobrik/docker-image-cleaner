@@ -43,11 +43,28 @@ func main() {
 		if _, ok := used[image.ID]; !ok {
 			log.Printf("Going to remove %s: %s", image.ID, strings.Join(image.RepoTags, ","))
 
+			repos := map[string]bool{}
+			for _, tag := range image.RepoTags {
+				d := strings.Index(tag, "/")
+				if d != -1 {
+					repos[tag[0:d]] = true
+				}
+			}
+
+			remove := []string{}
+			if len(repos) > 1 {
+				remove = image.RepoTags
+			} else {
+				remove = append(remove, image.ID)
+			}
+
 			if !*dryRun {
-				err := client.RemoveImage(image.ID)
-				if err != nil {
-					log.Printf("error while removing %s: %s", image.ID, strings.Join(image.RepoTags, ","))
-					continue
+				for _, r := range remove {
+					err := client.RemoveImage(r)
+					if err != nil {
+						log.Printf("error while removing %s (%s): %s", r, strings.Join(image.RepoTags, ","), err)
+						continue
+					}
 				}
 			}
 		}
