@@ -9,8 +9,17 @@ import (
 
 func main() {
 	endpoint := flag.String("endpoint", "unix:///var/run/docker.sock", "docker api endpoint")
+	exclude := flag.String("exclude", "", "images to exclude, image:tag[,image:tag]")
 	dryRun := flag.Bool("dry-run", false, "just list containers to remove")
 	flag.Parse()
+
+	excluded := map[string]struct{}{}
+
+	if len(*exclude) > 0 {
+		for _, i := range strings.Split(*exclude, ",") {
+			excluded[i] = struct{}{}
+		}
+	}
 
 	client, err := docker.NewClient(*endpoint)
 	if err != nil {
@@ -41,6 +50,22 @@ func main() {
 
 	for _, image := range images {
 		if _, ok := used[image.ID]; !ok {
+			skip := false
+			for _, tag := range image.RepoTags {
+				if _, ok := excluded[tag]; ok {
+					skip = true
+				}
+
+				if skip {
+					break
+				}
+			}
+
+			if skip {
+				log.Printf("Skipping %s: %s", image.ID, strings.Join(image.RepoTags, ","))
+				continue
+			}
+
 			log.Printf("Going to remove %s: %s", image.ID, strings.Join(image.RepoTags, ","))
 
 			repos := map[string]bool{}

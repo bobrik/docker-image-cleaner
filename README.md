@@ -11,3 +11,5 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock bobrik/image-cleane
 ```
 
 Add `-dry-run` to the end if you want to see what is going to be deleted.
+
+If you want to keep some images, use `-exclude image:tag[,image:tag]` flag.
