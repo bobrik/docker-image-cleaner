@@ -68,11 +68,13 @@ func main() {
 
 			log.Printf("Going to remove %s: %s", image.ID, strings.Join(image.RepoTags, ","))
 
-			repos := map[string]bool{}
+			repos := map[string]struct{}{}
 			for _, tag := range image.RepoTags {
 				d := strings.Index(tag, "/")
 				if d != -1 {
-					repos[tag[0:d]] = true
+					repos[tag[0:d]] = struct{}{}
+				} else {
+					repos["_"] = struct{}{}
 				}
 			}
 
