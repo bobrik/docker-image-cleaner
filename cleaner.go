@@ -26,9 +26,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	images, err := client.ListImages(docker.ListImagesOptions{})
+	topImages, err := client.ListImages(docker.ListImagesOptions{})
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	allImages, err := client.ListImages(docker.ListImagesOptions{All: true})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	imageTree := make(map[string]docker.APIImages, len(allImages))
+	for _, image := range allImages {
+		imageTree[image.ID] = image
 	}
 
 	containers, err := client.ListContainers(docker.ListContainersOptions{All: true})
@@ -46,9 +56,19 @@ func main() {
 		}
 
 		used[inspected.Image] = container.ID
+
+		parent := imageTree[inspected.Image].ParentID
+		for {
+			if parent == "" {
+				break
+			}
+
+			used[parent] = container.ID
+			parent = imageTree[parent].ParentID
+		}
 	}
 
-	for _, image := range images {
+	for _, image := range topImages {
 		if _, ok := used[image.ID]; !ok {
 			skip := false
 			for _, tag := range image.RepoTags {
