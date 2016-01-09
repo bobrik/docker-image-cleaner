@@ -1,4 +1,4 @@
-FROM gliderlabs/alpine:3.1
+FROM gliderlabs/alpine:3.3
 
 COPY . /go/src/github.com/bobrik/docker-image-cleaner
 
