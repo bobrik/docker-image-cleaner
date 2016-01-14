@@ -98,11 +98,20 @@ func main() {
 			log.Printf("Going to remove %s: %s", image.ID, strings.Join(image.RepoTags, ","))
 
 			if !*dryRun {
-				for _, r := range image.RepoTags {
-					_, err := docker.ImageRemove(types.ImageRemoveOptions{ImageID: r, PruneChildren: true})
+				if len(image.RepoTags) < 2 {
+					// <none>:<none> case, just remove by id
+					_, err := docker.ImageRemove(types.ImageRemoveOptions{ImageID: image.ID, PruneChildren: true})
 					if err != nil {
-						log.Printf("error while removing %s (%s): %s", r, strings.Join(image.RepoTags, ","), err)
-						continue
+						log.Printf("error while removing %s (%s): %s", image.ID, strings.Join(image.RepoTags, ","), err)
+					}
+				} else {
+					// several tags case, remove each by name
+					for _, r := range image.RepoTags {
+						_, err := docker.ImageRemove(types.ImageRemoveOptions{ImageID: r, PruneChildren: true})
+						if err != nil {
+							log.Printf("error while removing %s (%s): %s", r, strings.Join(image.RepoTags, ","), err)
+							continue
+						}
 					}
 				}
 			}
